@@ -78,7 +78,7 @@ bool _remoteCommandsInitialized = false;
                                          eventChannelWithName:[NSString stringWithFormat:@"better_player_channel/videoEvents%lld",
                                                                textureId]
                                          binaryMessenger:_messenger];
-    [player setMixWithOthers:false];
+    [player setMixWithOthers:true];
     [eventChannel setStreamHandler:player];
     player.eventChannel = eventChannel;
     _players[@(textureId)] = player;
