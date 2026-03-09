@@ -527,12 +527,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// and silently clamped.
   Future<void> seekTo(Duration? position) async {
     _timer?.cancel();
-    bool isPlaying = value.isPlaying;
+
     final int positionInMs = value.position.inMilliseconds;
     final int durationInMs = value.duration?.inMilliseconds ?? 0;
 
+    bool shouldPlay = value.isPlaying;
     if (positionInMs >= durationInMs && position?.inMilliseconds == 0) {
-      isPlaying = true;
+      shouldPlay = true;
     }
     if (_isDisposed) {
       return;
@@ -549,9 +550,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _videoPlayerPlatform.seekTo(_textureId, positionToSeek);
     _updatePosition(position);
 
-    if (isPlaying) {
+    // Use CURRENT value.isPlaying (not the stale snapshot) to avoid
+    // resuming playback if pause() was called during the async seek gap.
+    if (shouldPlay && value.isPlaying) {
       play();
-    } else {
+    } else if (!value.isPlaying) {
       pause();
     }
   }

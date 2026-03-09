@@ -280,6 +280,10 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 }
 
 -(void)startStalledCheck{
+    if(!_isPlaying) {
+        _isStalledCheckStarted = false;
+        return;
+    }
     if (_player.currentItem.playbackLikelyToKeepUp ||
         [self availableDuration] - CMTimeGetSeconds(_player.currentItem.currentTime) > 10.0) {
         [self play];
@@ -494,6 +498,9 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)pause {
     _isPlaying = false;
+    _isStalledCheckStarted = false;
+    _stalledCount = 0;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(startStalledCheck) object:nil];
     [self updatePlayingState];
 }
 
@@ -530,7 +537,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         toleranceBefore:kCMTimeZero
          toleranceAfter:kCMTimeZero
       completionHandler:^(BOOL finished){
-        if (wasPlaying){
+        if (wasPlaying && _isPlaying){
             _player.rate = _playerRate;
         }
     }];
